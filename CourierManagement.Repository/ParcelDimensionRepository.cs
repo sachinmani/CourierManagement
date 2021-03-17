@@ -8,14 +8,15 @@ namespace CourierManagement.Repository
     public class ParcelDimensionRepository : IParcelDimensionRepository
     {
 
-        private readonly Dictionary<ParcelSize, ParcelSizeDimensionInfo> _parcelSizeDimensionInfos = new Dictionary<ParcelSize, ParcelSizeDimensionInfo>
+        private readonly Dictionary<ParcelSize, ParcelSizeDimensionPriceInfo> _parcelSizeDimensionInfos = new Dictionary<ParcelSize, ParcelSizeDimensionPriceInfo>
         {
-            { ParcelSize.Small, new ParcelSizeDimensionInfo(9.99, 9.99, 9.99, ParcelSize.Small)},
-            { ParcelSize.Medium, new ParcelSizeDimensionInfo(49.99, 49.99, 49.99, ParcelSize.Medium)},
-            { ParcelSize.Large, new ParcelSizeDimensionInfo(99.99, 99.99, 99.99, ParcelSize.Large)}
+            { ParcelSize.Small, new ParcelSizeDimensionPriceInfo(9.99, 9.99, 9.99, ParcelSize.Small, 1, 2)},
+            { ParcelSize.Medium, new ParcelSizeDimensionPriceInfo(49.99, 49.99, 49.99, ParcelSize.Medium, 3, 2)},
+            { ParcelSize.Large, new ParcelSizeDimensionPriceInfo(99.99, 99.99, 99.99, ParcelSize.Large, 6, 2)},
+            { ParcelSize.Large, new ParcelSizeDimensionPriceInfo(5000, 5000, 5000, ParcelSize.Xl, 10, 2)}
         };
 
-        public List<ParcelSizeDimensionInfo> GetDimensions()
+        public List<ParcelSizeDimensionPriceInfo> GetDimensions()
         {
             return _parcelSizeDimensionInfos.Values.ToList();
         }

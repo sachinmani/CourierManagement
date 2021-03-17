@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using CourierManagement.Common.Enums;
+using CourierManagement.Dto;
 using CourierManagement.RequestModels;
 
 namespace CourierManagement.Domain
@@ -43,9 +44,9 @@ namespace CourierManagement.Domain
             return new Cart(sessionId);
         }
 
-        public Cart AddItemToCart(AddParcelItemRequest request, ParcelSize size, decimal cost)
+        public Cart AddItemToCart(AddParcelItemDto request, ParcelSizeDimensionPriceInfo dimensionPriceInfo, decimal cost)
         {
-            var parcel = ParcelItem.Create(request, size, cost);
+            var parcel = ParcelItem.Create(request, dimensionPriceInfo, cost);
             Items.Add(parcel);
             return this;
         }

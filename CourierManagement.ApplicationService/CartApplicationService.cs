@@ -2,6 +2,7 @@
 using CourierManagement.Common.Enums;
 using CourierManagement.Domain;
 using CourierManagement.DomainService;
+using CourierManagement.Dto;
 using CourierManagement.Repository;
 using CourierManagement.RequestModels;
 
@@ -24,10 +25,15 @@ namespace CourierManagement.ApplicationService
         {
             var cart = _cartRepository.GetCart(parcelItemRequest.SessionId) ?? Cart.Create(parcelItemRequest.SessionId);
             _cartRepository.SaveCart(cart);
+
+            var addItemReqDto = AddParcelItemDto.FromRequestModel(parcelItemRequest);
             //Determine Parcel Size and price
-            var size = _parcelItemDimensionCalculator.DetermineParcelSize(parcelItemRequest);
-            var price = _fixedPriceSettingsRepository.GetPriceForParcelItem(size);
-            cart.AddItemToCart(parcelItemRequest, size, price);
+            var parcelSizeDimensionPriceInfo = _parcelItemDimensionCalculator.DetermineParcelSize(addItemReqDto);
+            var price = _fixedPriceSettingsRepository.GetPriceForParcelItem(parcelSizeDimensionPriceInfo.ParcelSize);
+            var excessKg = _parcelItemDimensionCalculator.DetermineParcelWeightInKg(addItemReqDto);
+            addItemReqDto.UpdateExcessKg(excessKg);
+
+            cart.AddItemToCart(addItemReqDto, parcelSizeDimensionPriceInfo, price);
             return cart.CartId;
         }
 
@@ -49,7 +55,7 @@ namespace CourierManagement.ApplicationService
             Console.WriteLine($"Item Listing");
             foreach (var parcelItem in cart.Items)
             {
-                Console.WriteLine($"Name={parcelItem.ItemName} with address={parcelItem.Address} and FixedDeliveryCost={parcelItem.FixedDeliveryCost}");
+                Console.WriteLine($"Name={parcelItem.ItemName} with address={parcelItem.Address} and FixedDeliveryCost={parcelItem.FixedDeliveryCost} and of ExcessKg={parcelItem.ExcessKg} and its cost is {parcelItem.ExcessKgCost} ");
             }
             Console.WriteLine($"Cart Delivery Cost = {cart.GetDeliveryCost()}");
         }

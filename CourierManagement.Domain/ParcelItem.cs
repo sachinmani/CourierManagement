@@ -1,5 +1,6 @@
 ﻿using System;
 using CourierManagement.Common.Enums;
+using CourierManagement.Dto;
 using CourierManagement.RequestModels;
 
 namespace CourierManagement.Domain
@@ -25,14 +26,20 @@ namespace CourierManagement.Domain
 
         public decimal FixedDeliveryCost { get; private set; }
 
-        public static ParcelItem Create(AddParcelItemRequest request, ParcelSize size, decimal cost)
+        public decimal ExcessKg { get; private set; }
+
+        public decimal ExcessKgCost { get; private set; }
+
+        public static ParcelItem Create(AddParcelItemDto request, ParcelSizeDimensionPriceInfo dimensionPriceInfo, decimal cost)
         {
             return new ParcelItem
             {
-                Size = size,
+                Size = dimensionPriceInfo.ParcelSize,
                 Address = request.Address,
                 ItemName = request.ItemName,
-                FixedDeliveryCost = cost
+                FixedDeliveryCost = cost,
+                ExcessKg = request.ExcessInKg,
+                ExcessKgCost = request.ExcessInKg * dimensionPriceInfo.CostPerExtraKg
             };
         }
     }

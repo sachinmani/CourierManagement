@@ -3,6 +3,7 @@ using System.Linq;
 using CourierManagement.ApplicationService;
 using CourierManagement.Common.Enums;
 using CourierManagement.DomainService;
+using CourierManagement.Dto;
 using CourierManagement.Repository;
 using CourierManagement.RequestModels;
 using Moq;
@@ -21,8 +22,8 @@ namespace UnitTest
         public void Setup()
         {
             _parcelDimensionDeterminerMock = new Mock<IParcelItemSizeDeterminer>();
-            _parcelDimensionDeterminerMock.Setup(m => m.DetermineParcelSize(It.IsAny<AddParcelItemRequest>()))
-                .Returns(ParcelSize.Small);
+            _parcelDimensionDeterminerMock.Setup(m => m.DetermineParcelSize(It.IsAny<AddParcelItemDto>()))
+                .Returns(new ParcelSizeDimensionPriceInfo(1,1,1, ParcelSize.Small, 1, 2));
             _cartRepository = new CartRepository();
         }
 

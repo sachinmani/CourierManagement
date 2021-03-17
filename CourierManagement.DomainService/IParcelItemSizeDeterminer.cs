@@ -1,10 +1,10 @@
-﻿using CourierManagement.Common.Enums;
-using CourierManagement.RequestModels;
+﻿using CourierManagement.Dto;
 
 namespace CourierManagement.DomainService
 {
     public interface IParcelItemSizeDeterminer
     {
-        ParcelSize DetermineParcelSize(AddParcelItemRequest addParcelItemRequest);
+        ParcelSizeDimensionPriceInfo DetermineParcelSize(AddParcelItemDto addParcelItemRequest);
+        decimal DetermineParcelWeightInKg(AddParcelItemDto parcelItemRequest);
     }
 }

@@ -2,14 +2,16 @@
 
 namespace CourierManagement.Dto
 {
-    public class ParcelSizeDimensionInfo
+    public class ParcelSizeDimensionPriceInfo
     {
-        public ParcelSizeDimensionInfo(double maxLength, double maxBreadth, double maxWidth, ParcelSize parcelSize)
+        public ParcelSizeDimensionPriceInfo(double maxLength, double maxBreadth, double maxWidth, ParcelSize parcelSize, int maxWeight, decimal costPerExtraKg)
         {
             MaxLength = maxLength;
             MaxBreadth = maxBreadth;
             MaxWidth = maxWidth;
             ParcelSize = parcelSize;
+            MaxWeight = maxWeight;
+            CostPerExtraKg = costPerExtraKg;
         }
 
         public double MaxLength { get; }
@@ -19,5 +21,9 @@ namespace CourierManagement.Dto
         public double MaxWidth { get; }
 
         public ParcelSize ParcelSize { get;}
+
+        public int MaxWeight { get; }
+
+        public decimal CostPerExtraKg { get; }
     }
 }

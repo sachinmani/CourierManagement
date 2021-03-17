@@ -1,5 +1,6 @@
 ﻿using CourierManagement.Common.Enums;
 using CourierManagement.DomainService;
+using CourierManagement.Dto;
 using CourierManagement.Repository;
 using CourierManagement.RequestModels;
 using NUnit.Framework;
@@ -33,7 +34,7 @@ namespace UnitTest
             //
             // Act
             //
-            var actual = parcelItemSizeDeterminer.DetermineParcelSize(new AddParcelItemRequest
+            var actual = parcelItemSizeDeterminer.DetermineParcelSize(new AddParcelItemDto
             {
                 Length = length,
                 Breadth = breadth,
@@ -43,7 +44,7 @@ namespace UnitTest
             //
             //
             //
-            Assert.AreEqual(expectedResult, actual);
+            Assert.AreEqual(expectedResult, actual.ParcelSize);
         }
     
     }

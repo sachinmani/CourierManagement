@@ -5,6 +5,6 @@ namespace CourierManagement.Repository
 {
     public interface IParcelDimensionRepository
     {
-        List<ParcelSizeDimensionInfo> GetDimensions();
+        List<ParcelSizeDimensionPriceInfo> GetDimensions();
     }
 }
