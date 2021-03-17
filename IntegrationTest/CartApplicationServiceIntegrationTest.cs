@@ -1,71 +1,36 @@
-﻿using System;
+using System;
 using System.Linq;
 using CourierManagement.ApplicationService;
 using CourierManagement.Common.Enums;
 using CourierManagement.DomainService;
 using CourierManagement.Repository;
 using CourierManagement.RequestModels;
-using Moq;
 using NUnit.Framework;
 
-namespace UnitTest
+namespace IntegrationTest
 {
-    [TestFixture]
-    public class CartApplicationServiceTest
+    public class CartApplicationServiceIntegrationTest
     {
-        private Mock<IParcelItemSizeDeterminer> _parcelDimensionDeterminerMock;
-
-        private CartRepository _cartRepository;
+        private ICartRepository _cartRepository;
+        private IFixedPriceSettingsRepository _fixedPriceSettingsRepository;
+        private IParcelItemSizeDeterminer _parcelItemSizeDeterminer;
 
         [SetUp]
         public void Setup()
         {
-            _parcelDimensionDeterminerMock = new Mock<IParcelItemSizeDeterminer>();
-            _parcelDimensionDeterminerMock.Setup(m => m.DetermineParcelSize(It.IsAny<AddParcelItemRequest>()))
-                .Returns(ParcelSize.Small);
             _cartRepository = new CartRepository();
+            _fixedPriceSettingsRepository = new FixedPriceSettingsRepository();
+            _parcelItemSizeDeterminer = new ParcelItemSizeDeterminer(new ParcelDimensionRepository());
         }
 
         [Test]
-        public void AddParcelItem_Should_Successfully_CreateACart_And_AddItemsToIt()
-        {
-            //
-            // Arrange
-            //
-            var cartAppSvc = new CartApplicationService(new CartRepository(), _parcelDimensionDeterminerMock.Object, new FixedPriceSettingsRepository());
-
-            //
-            // Act
-            //
-            var cartId = cartAppSvc.AddParcelItem(new AddParcelItemRequest
-            {
-                SessionId = Guid.NewGuid(),
-                ItemName = "Test",
-                Address = "Test Address 1",
-                Breadth = 9,
-                Length = 9,
-                Width = 9
-            });
-            var cart = _cartRepository.GetCart(cartId);
-
-            //
-            // Assert
-            //
-            Assert.That(cart.Items.Count == 1);
-            Assert.That(cart.TotalItemCost() == 3);
-            Assert.That(cart.Items.First().ItemName == "Test");
-            Assert.That(cart.Items.First().Address == "Test Address 1");
-            Assert.That(cart.Items.First().FixedDeliveryCost == 3);
-        }
-
-        [Test]
-        public void AddParcelItem_Should_Successfully_CreateACart_And_AddMultipleItemsToIt_And_TotalCorrect()
+        public void AddParcelItem_Should_CreateCart_AndParcelItem_WithCorrectSize_And_Price()
         {
             //
             // Arrange
             //
             var sessionId = Guid.NewGuid();
-            var cartAppSvc = new CartApplicationService(_cartRepository, _parcelDimensionDeterminerMock.Object, new FixedPriceSettingsRepository());
+            var cartAppSvc = new CartApplicationService(_cartRepository, _parcelItemSizeDeterminer, _fixedPriceSettingsRepository);
             var item1 = new AddParcelItemRequest
             {
                 SessionId = sessionId,
@@ -81,8 +46,8 @@ namespace UnitTest
                 SessionId = sessionId,
                 ItemName = "Test",
                 Address = "Test Address 2",
-                Breadth = 9,
-                Length = 9,
+                Breadth = 19,
+                Length = 51,
                 Width = 9
             };
 
@@ -91,9 +56,9 @@ namespace UnitTest
                 SessionId = sessionId,
                 ItemName = "Test",
                 Address = "Test Address 3",
-                Breadth = 9,
-                Length = 9,
-                Width = 9
+                Breadth = 100,
+                Length = 10,
+                Width = 20
             };
 
             //
@@ -108,19 +73,25 @@ namespace UnitTest
             // Assert
             //
             Assert.That(cart.Items.Count == 3);
-            Assert.That(cart.TotalItemCost() == 9);
+            Assert.That(cart.TotalItemCost() == 43);
+            Assert.That(cart.Items.First().FixedDeliveryCost == 3);
+            Assert.That(cart.Items[1].FixedDeliveryCost == 15);
+            Assert.That(cart.Items.Last().FixedDeliveryCost == 25);
+
+            //Now displaying cart details
+            cartAppSvc.DisplayCartDetails(cartId);
         }
 
         [Test]
         [TestCase(DeliveryType.Speed)]
         [TestCase(DeliveryType.Normal)]
-        public void Checkout_Should_Calculate_DeliveryCost_Correctly_Based_OnDeliveryType(DeliveryType deliveryType)
+        public void Checkout_Should_Calculate_DeliveryCost_BasedOn_DeliveryType(DeliveryType deliveryType)
         {
             //
             // Arrange
             //
             var sessionId = Guid.NewGuid();
-            var cartAppSvc = new CartApplicationService(_cartRepository, _parcelDimensionDeterminerMock.Object, new FixedPriceSettingsRepository());
+            var cartAppSvc = new CartApplicationService(_cartRepository, _parcelItemSizeDeterminer, _fixedPriceSettingsRepository);
             var item1 = new AddParcelItemRequest
             {
                 SessionId = sessionId,
@@ -136,8 +107,8 @@ namespace UnitTest
                 SessionId = sessionId,
                 ItemName = "Test",
                 Address = "Test Address 2",
-                Breadth = 9,
-                Length = 9,
+                Breadth = 19,
+                Length = 51,
                 Width = 9
             };
 
@@ -146,9 +117,9 @@ namespace UnitTest
                 SessionId = sessionId,
                 ItemName = "Test",
                 Address = "Test Address 3",
-                Breadth = 9,
-                Length = 9,
-                Width = 9
+                Breadth = 100,
+                Length = 10,
+                Width = 20
             };
 
             //
@@ -163,16 +134,22 @@ namespace UnitTest
             //
             // Assert
             //
+            Assert.That(cart.Items.Count == 3);
+            Assert.That(cart.TotalItemCost() == 43);
+            Assert.That(cart.Items.First().FixedDeliveryCost == 3);
+            Assert.That(cart.Items[1].FixedDeliveryCost == 15);
+            Assert.That(cart.Items.Last().FixedDeliveryCost == 25);
             if (deliveryType == DeliveryType.Speed)
             {
-                Assert.That(cart.GetDeliveryCost() == 18);
-                Assert.That(cart.TotalItemCost() == 9);
+                Assert.That(cart.ChosenDeliveryType == deliveryType);
+                Assert.That(cart.GetDeliveryCost() == 86);
             }
             else
             {
+                Assert.That(cart.ChosenDeliveryType == deliveryType);
                 Assert.That(cart.GetDeliveryCost() == 0);
             }
+            cartAppSvc.DisplayCartDetails(cartId);
         }
-
     }
 }
